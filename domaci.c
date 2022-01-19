@@ -260,23 +260,7 @@ error1:
 
 static int timer_remove(struct platform_device *pdev)
 {
-	// Disable timer
-	unsigned int data_high = 0;
-	unsigned int data_low = 0;
-	data_high = ioread32(tp->base_addr + XIL_AXI_TIMER_TCSR1_OFFSET);
-	iowrite32(data_high & ~(XIL_AXI_TIMER_CSR_ENABLE_TMR_MASK),
-			tp->base_addr + XIL_AXI_TIMER_TCSR1_OFFSET);
-	data_low = ioread32(tp->base_addr + XIL_AXI_TIMER_TCSR1_OFFSET);
-	iowrite32(data_low & ~(XIL_AXI_TIMER_CSR_ENABLE_TMR_MASK),
-			tp->base_addr + XIL_AXI_TIMER_TCSR0_OFFSET);
-	// Free resources taken in probe
-	free_irq(tp->irq_num, NULL);
-	iowrite32(0, tp->base_addr);
-	iounmap(tp->base_addr);
-	release_mem_region(tp->mem_start, tp->mem_end - tp->mem_start + 1);
-	kfree(tp);
-	printk(KERN_WARNING "xilaxitimer_remove: Timer driver removed\n");
-	return 0;
+	
 }
 
 
@@ -304,30 +288,7 @@ ssize_t timer_read(struct file *pfile, char __user *buffer, size_t length, loff_
 
 ssize_t timer_write(struct file *pfile, const char __user *buffer, size_t length, loff_t *offset) 
 {
-	char buff[BUFF_SIZE];
-	int sec = 0;
-	int mins = 0;
-	int hours = 0;
-	int days = 0;
-	int ret = 0;
-	ret = copy_from_user(buff, buffer, length);
-	if(ret)
-		return -EFAULT;
-	buff[length] = '\0';
 
-	ret = sscanf(buff,"%d:%d:%d:%d",&days,&hours, &mins, &sec);
-	if(ret == 4)//two parameters parsed in sscanf
-	{
-
-			sec = sec + mins*60 + hours*60*60 + days*24*60*60;
-			setup_and_start_timer(sec);
-
-	}
-	else
-	{
-		printk(KERN_WARNING "xilaxitimer_write: Wrong format, expected n,t \n\t n-number of interrupts\n\t t-time in ms between interrupts\n");
-	}
-	return length;
 }
 
 //***************************************************
